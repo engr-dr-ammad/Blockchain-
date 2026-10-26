@@ -17,7 +17,6 @@ pydantic==2.4.2         # Data validation
 
 # Networking
 aiohttp==3.9.0          # Async HTTP client
-asyncio-contextmanager==1.0.0
 
 # Utilities
 click==8.1.7            # CLI utilities
