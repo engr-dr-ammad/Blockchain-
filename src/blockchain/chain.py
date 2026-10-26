@@ -12,6 +12,7 @@ from .crypto import hash
 from .mempool import Mempool
 from .storage import BlockStore, StateStore
 from .transaction import Transaction
+from src.iot.sensor import SensorRegistry
 
 
 class Blockchain:
@@ -35,6 +36,7 @@ class Blockchain:
         self.block_store = BlockStore(f"{db_path}/blocks")
         self.state_store = StateStore(f"{db_path}/state")
         self.mempool = Mempool()
+        self.sensor_registry = SensorRegistry()
 
         # Create genesis block if this is a fresh chain
         if self.block_store.get_latest_height() < 0:
@@ -193,6 +195,34 @@ class Blockchain:
                     return False, f"Invalid parent hash at height {height}"
 
         return True, "Chain is valid"
+
+    def validate_sensor_reading(self, reading) -> Tuple[bool, str]:
+        """
+        Validate a sensor reading.
+
+        Args:
+            reading: SensorReading to validate
+
+        Returns:
+            Tuple of (is_valid, reason)
+        """
+        return self.sensor_registry.validate_reading(reading)
+
+    def accept_sensor_reading(self, reading) -> bool:
+        """
+        Accept a validated sensor reading.
+
+        Args:
+            reading: SensorReading to accept
+
+        Returns:
+            True if accepted
+        """
+        return self.sensor_registry.accept_reading(reading)
+
+    def get_sensor_registry(self):
+        """Get the sensor registry."""
+        return self.sensor_registry
 
     def close(self) -> None:
         """Close database connections."""
