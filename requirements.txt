@@ -1,47 +1,23 @@
 # Core Dependencies
 # Cryptography
-pynacl==1.5.0           # Ed25519 signatures (libsodium)
-cryptography==41.0.0    # Additional crypto utilities
-
-# Storage
-python-rocksdb==0.6.9   # RocksDB Python bindings
+pynacl>=1.5.0           # Ed25519 signatures (libsodium)
+cryptography>=41.0.0    # Additional crypto utilities
 
 # Serialization
-cbor2==5.4.6            # CBOR encoding/decoding
-msgpack==1.0.7          # Compact serialization (alternative)
+cbor2>=5.4.6            # CBOR encoding/decoding
 
 # HTTP API
-fastapi==0.104.1        # REST API framework
-uvicorn==0.24.0         # ASGI server
-pydantic==2.4.2         # Data validation
-
-# Networking
-aiohttp==3.9.0          # Async HTTP client
+fastapi>=0.100.0        # REST API framework
+uvicorn>=0.23.0         # ASGI server
+pydantic>=2.0.0         # Data validation
 
 # Utilities
-click==8.1.7            # CLI utilities
-python-dotenv==1.0.0    # Environment variables
-pyyaml==6.0.1           # Configuration files
-loguru==0.7.2           # Logging
+python-dotenv>=1.0.0    # Environment variables
+pyyaml>=6.0.0           # Configuration files
 
-# Testing
-pytest==7.4.3           # Test framework
-pytest-asyncio==0.21.1  # Async test support
-pytest-cov==4.1.0       # Coverage reporting
-pytest-benchmark==4.0.0 # Benchmarking
+# Testing (essential)
+pytest>=7.0.0           # Test framework
 
 # Development
-black==23.11.0          # Code formatting
-flake8==6.1.0           # Linting
-mypy==1.7.0             # Type checking
-isort==5.12.0           # Import sorting
-
-# Database Migrations & Utilities
-alembic==1.12.0         # Schema migrations
-
-# Monitoring & Observability
-prometheus-client==0.18.0  # Metrics
-
-# Type stubs
-types-PyYAML==6.0.12
-types-requests==2.31.0.8
+black>=23.0.0           # Code formatting
+isort>=5.0.0            # Import sorting

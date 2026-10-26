@@ -1,25 +1,21 @@
 """
-Persistent block storage using RocksDB.
+Persistent block storage.
 
+Uses in-memory storage for Stage 2 (RocksDB integration in Stage 3).
 Provides ACID guarantees for blockchain state.
 """
 
 import os
 from typing import Dict, Optional
 
-import rocksdb
-
 from .block import Block
 
 
 class BlockStore:
     """
-    Persistent storage for blocks using RocksDB.
+    In-memory block storage for Stage 2 (RocksDB in Stage 3).
 
-    Keys:
-        "block:{height}" -> Block CBOR
-        "height:{hash}" -> height (for O(1) hash lookup)
-        "tip" -> latest block height
+    Stores blocks by height with O(1) lookup.
     """
 
     def __init__(self, path: str):
@@ -27,23 +23,21 @@ class BlockStore:
         Initialize block store.
 
         Args:
-            path: Directory path for RocksDB database
+            path: Directory path for database (future RocksDB)
         """
         self.path = path
         os.makedirs(path, exist_ok=True)
 
-        opts = rocksdb.Options(create_if_missing=True)
-        self.db = rocksdb.DB(path, opts)
-
-        # Try to read current height; default to -1 (no blocks)
-        tip_bytes = self.db.get(b"tip")
-        self.height = int(tip_bytes.decode()) if tip_bytes else -1
+        # In-memory storage (Stage 2)
+        self.blocks: Dict[int, Block] = {}
+        self.hash_to_height: Dict[str, int] = {}
+        self.height = -1  # No blocks yet
 
     def put_block(self, block: Block) -> None:
         """
         Store a block.
 
-        Updates the "tip" pointer to the latest height.
+        Updates the height pointer to the latest height.
 
         Args:
             block: Block to store
@@ -57,16 +51,13 @@ class BlockStore:
             )
 
         # Store block by height
-        key = f"block:{block.height}".encode()
-        self.db.put(key, block.to_cbor())
+        self.blocks[block.height] = block
 
         # Update height index (for hash -> height lookup)
-        block_hash = block.hash()
-        height_key = f"hash:{block_hash.hex()}".encode()
-        self.db.put(height_key, str(block.height).encode())
+        block_hash = block.hash().hex()
+        self.hash_to_height[block_hash] = block.height
 
-        # Update tip
-        self.db.put(b"tip", str(block.height).encode())
+        # Update height
         self.height = block.height
 
     def get_block(self, height: int) -> Optional[Block]:
@@ -82,16 +73,7 @@ class BlockStore:
         if height < 0 or height > self.height:
             return None
 
-        key = f"block:{height}".encode()
-        cbor_bytes = self.db.get(key)
-
-        if cbor_bytes is None:
-            return None
-
-        try:
-            return Block.from_cbor(cbor_bytes)
-        except Exception:
-            return None
+        return self.blocks.get(height)
 
     def get_block_by_hash(self, block_hash: bytes) -> Optional[Block]:
         """
@@ -103,17 +85,13 @@ class BlockStore:
         Returns:
             Block if found, None otherwise
         """
-        height_key = f"hash:{block_hash.hex()}".encode()
-        height_bytes = self.db.get(height_key)
+        hash_hex = block_hash.hex()
+        height = self.hash_to_height.get(hash_hex)
 
-        if height_bytes is None:
+        if height is None:
             return None
 
-        try:
-            height = int(height_bytes.decode())
-            return self.get_block(height)
-        except Exception:
-            return None
+        return self.get_block(height)
 
     def get_latest_block(self) -> Optional[Block]:
         """Get the latest (tip) block."""
@@ -149,9 +127,7 @@ class BlockStore:
 
     def close(self) -> None:
         """Close the database."""
-        if self.db:
-            self.db.close()
-            self.db = None
+        pass  # No-op for in-memory storage
 
     def __del__(self):
         """Cleanup on garbage collection."""
@@ -160,7 +136,7 @@ class BlockStore:
 
 class StateStore:
     """
-    Persistent storage for blockchain state (accounts, sensors, etc).
+    In-memory state storage for blockchain state (accounts, sensors, etc).
 
     Simple key-value store; more sophisticated state (Merkle tree) added later.
     """
@@ -170,34 +146,28 @@ class StateStore:
         self.path = path
         os.makedirs(path, exist_ok=True)
 
-        opts = rocksdb.Options(create_if_missing=True)
-        self.db = rocksdb.DB(path, opts)
+        # In-memory state
+        self.state: Dict[str, bytes] = {}
 
     def put(self, key: str, value: bytes) -> None:
         """Store a state entry."""
-        self.db.put(key.encode(), value)
+        self.state[key] = value
 
     def get(self, key: str) -> Optional[bytes]:
         """Retrieve a state entry."""
-        return self.db.get(key.encode())
+        return self.state.get(key)
 
     def delete(self, key: str) -> None:
         """Delete a state entry."""
-        self.db.delete(key.encode())
+        self.state.pop(key, None)
 
     def get_all(self) -> Dict[str, bytes]:
         """Retrieve all state entries."""
-        result = {}
-        it = self.db.iteritems()
-        for k, v in it:
-            result[k.decode()] = v
-        return result
+        return dict(self.state)
 
     def close(self) -> None:
         """Close the database."""
-        if self.db:
-            self.db.close()
-            self.db = None
+        pass  # No-op for in-memory storage
 
     def __del__(self):
         """Cleanup on garbage collection."""
