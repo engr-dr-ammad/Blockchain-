@@ -8,7 +8,7 @@ Based on the research:
 - *Securing IoT Sensors Using Sharding-Based Blockchain Network Technology Integration: A Systematic Review*
 - *A Blockchain-based Decentralized Secure Data Aggregation Scheme with ZKP for WSNs*
 
-Author: Ammad Aslam
+**Developed by Ammad Aslam with AI-assisted tooling**
 
 ## Quick Start (Development)
 
@@ -106,8 +106,8 @@ See [docs/RESEARCH_MAPPING.md](docs/RESEARCH_MAPPING.md) for detailed mapping of
 
 ## Authors & Acknowledgments
 
-- **Research Author**: Ammad Aslam
-- **Implementation Lead**: Claude Code
+- **Research & Implementation**: Ammad Aslam (aamdm1@iscte-iul.pt)
+- **Development Methodology**: AI-assisted development using Claude Code
 - **Contributing Researchers**: [To be added]
 
 ---
